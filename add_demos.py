@@ -2,6 +2,7 @@ import os
 import subprocess
 import psycopg2
 import requests
+import sys
 from dotenv import load_dotenv
 
 # Configuration
@@ -19,6 +20,24 @@ DATABASE_CONFIG = {
     'host': os.getenv('DB_HOST'),
     'port': os.getenv('DB_PORT')
 }
+
+try:
+    response = input('Do you want to download demos of a specific team? (Y/N): ').strip().upper()
+    if response == 'Y':
+        TEAM_NAME = input('Enter the team name (no spaces): ').strip()
+        if ' ' in TEAM_NAME:
+            raise ValueError('Team name should not contain spaces.')
+    elif response == 'N':
+        TEAM_NAME = None
+    else:
+        raise ValueError('Invalid input. Please enter Y or N.')
+except ValueError as e:
+    print(f"Error: {e}")
+    sys.exit()
+
+
+
+
 
 # Ensure demo directory exists
 os.makedirs(DEMO_SAVE_DIR, exist_ok=True)
@@ -62,7 +81,7 @@ for demo_url in demo_urls:
     demo_filename = demo_url.split('/')[-1]
     
     # Only download if the filename contains "RowdyRaccoons"
-    if 'RowdyRaccoons' in demo_filename:
+    if TEAM_NAME in demo_filename:
         demo_path = download_demo(demo_url, DEMO_SAVE_DIR)
         # if you want to filter speific demos, feel free to add specifics
         # if demo_path:
@@ -73,3 +92,5 @@ for demo_url in demo_urls:
         #     }
         # store_demo_in_db(demo_path, metadata)
         store_demo_in_db(demo_path)
+        
+sys.exit()
